@@ -1,0 +1,76 @@
+esphome:
+  name: driveway_monitor
+  platform: ESP32
+  board: nodemcu-32s
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Driveway Monitor"
+    password: !secret hotspot_pass
+    
+#mqtt:
+#  broker: !secret mqtt_broker
+#  username: !secret mqtt_user
+#  password: !secret mqtt_pass
+
+captive_portal:
+
+web_server:
+  port: 80
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+#api:
+#  password: !secret esphome_password
+
+ota:
+  password: !secret esphome_password
+  
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO25
+      inverted: True
+      mode: INPUT_PULLUP
+    name: "Driveway Monitor Power"
+    device_class: power
+  - platform: gpio
+    pin:
+      number: GPIO26
+      inverted: True
+      mode: INPUT_PULLUP
+    name: "Driveway Monitor Visitor"
+    device_class: door
+  - platform: gpio
+    pin:
+      number: GPIO27
+      inverted: True
+      mode: INPUT_PULLUP
+    name: "Driveway Monitor Battery Low"
+    device_class: battery
+    
+switch:
+  - platform: gpio
+    pin: 17
+    inverted: True
+    id: driveway_relay
+#    name: "Driveway Monitor Relay"
+  - platform: template
+    name: "Driveway Monitor Reset"
+    icon: "mdi:electric-switch"
+    turn_on_action:
+    - switch.turn_on: driveway_relay
+    - delay: 500ms
+    - switch.turn_off: driveway_relay
+    
+esp32_ble_beacon:
+  type: iBeacon
+  uuid: '08aefa77-f322-8c05-128a-47288f860293'
+  major: 10167
+  minor: 61958
